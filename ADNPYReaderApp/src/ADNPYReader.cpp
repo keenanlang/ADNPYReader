@@ -1,5 +1,16 @@
 #include "ADNPYReader.h"
 
+#include <iocsh.h>
+#include <epicsExport.h>
+
+extern "C"
+{
+	void NPYConfig(const char* portname)
+	{
+		new ADNPYReader(portname);
+	}
+}
+
 ADNPYReader::ADNPYReader(const char* portname) :
 	ADDriver(portName,
 	1,
@@ -17,7 +28,7 @@ ADNPYReader::ADNPYReader(const char* portname) :
 	setStringParam(params[ADNPY_FilePath], "");
 }
 
-ADNPYReader::addParam(const char* paramname, asynParamType type)
+void ADNPYReader::addParam(const char* paramname, asynParamType type)
 {
 	int tempval;
 	std::string key(paramname);

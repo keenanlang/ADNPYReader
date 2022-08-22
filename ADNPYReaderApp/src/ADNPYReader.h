@@ -18,7 +18,7 @@ class epicsShareClass ADNPYReader: public ADDriver
 		void addParam(const char* name, asynParamType type);
 	
 		std::map<std::string, int> params;
-}
+};
 
 #define ADNPY_FilePath      "ADNPY_FILE_PATH"
 
