@@ -40,6 +40,35 @@ void ADNPYReader::addParam(const char* paramname, asynParamType type)
 
 
 
+asynStatus ADNPYReader::writeInt32(asynUser* pasynUser, epicsInt32 value)
+{
+	int addr;
+	int function;
+	const char* paramName;
+	
+	int status = parseAsynUser(pasynUser, &function, &addr, &paramName);
+	if (status != asynSuccess)    { return (asynStatus) status; }
+	
+	setIntegerParam(addr, function, value);
+	
+	if (function == ADAcquire)
+	{
+		std::string filepath;
+		
+		this->getStringParam(params[ADNPY_FilePath], filepath);
+		
+		printf("%s\n", filepath.c_str());
+	}
+	else
+	{
+		status = ADDriver::writeInt32(pasynUser, value);
+	}
+	
+	callParamCallbacks(addr);
+	return (asynStatus) status;
+}
+
+
 
 static const iocshArg NPYConfigArg0 = { "Port name", iocshArgString };
 

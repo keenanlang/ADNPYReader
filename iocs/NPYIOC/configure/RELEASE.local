@@ -1,0 +1,4 @@
+SUPPORT=/APSshare/epics/synApps_6_2_1/support
+
+-include $(SUPPORT)/configure/RELEASE
+-include $(AREA_DETECTOR)/configure/RELEASE_LIBS_INCLUDE
