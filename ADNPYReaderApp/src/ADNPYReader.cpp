@@ -3,6 +3,8 @@
 #include <iocsh.h>
 #include <epicsExport.h>
 
+static void acquire_thread_callback(void* drvPvt)    { ((ADNPYReader*) drvPvt)->acquireThread(); }
+
 extern "C"
 {
 	void NPYConfig(const char* portname)
@@ -12,7 +14,7 @@ extern "C"
 }
 
 ADNPYReader::ADNPYReader(const char* portname) :
-	ADDriver(portName,
+	ADDriver(portname,
 	1,
 	0,
 	0,
@@ -25,7 +27,10 @@ ADNPYReader::ADNPYReader(const char* portname) :
 	0)
 {
 	this->addParam(ADNPY_FilePath, asynParamOctet);
-	setStringParam(params[ADNPY_FilePath], "");
+	this->setStringParam(params[ADNPY_FilePath], "");
+	
+	this->setIntegerParam(ADStatus, ADStatusIdle);
+	this->callParamCallbacks();
 }
 
 void ADNPYReader::addParam(const char* paramname, asynParamType type)
@@ -39,7 +44,6 @@ void ADNPYReader::addParam(const char* paramname, asynParamType type)
 }
 
 
-
 asynStatus ADNPYReader::writeInt32(asynUser* pasynUser, epicsInt32 value)
 {
 	int addr;
@@ -49,15 +53,25 @@ asynStatus ADNPYReader::writeInt32(asynUser* pasynUser, epicsInt32 value)
 	int status = parseAsynUser(pasynUser, &function, &addr, &paramName);
 	if (status != asynSuccess)    { return (asynStatus) status; }
 	
+	
+	int adstatus;
+	getIntegerParam(ADStatus, &adstatus);
+	
 	setIntegerParam(addr, function, value);
 	
 	if (function == ADAcquire)
-	{
-		std::string filepath;
+	{	
+		if (value == 1 && adstatus == ADStatusIdle)
+		{
+			this->setIntegerParam(ADStatus, ADStatusAcquire);
+			this->callParamCallbacks();
 		
-		this->getStringParam(params[ADNPY_FilePath], filepath);
-		
-		printf("%s\n", filepath.c_str());
+			epicsThreadCreate("ADNPYReader::acquireThread()",
+	                  epicsThreadPriorityLow,
+	                  epicsThreadGetStackSize(epicsThreadStackMedium),
+	                  (EPICSTHREADFUNC)::acquire_thread_callback,
+	                  this);
+		}
 	}
 	else
 	{
@@ -66,6 +80,16 @@ asynStatus ADNPYReader::writeInt32(asynUser* pasynUser, epicsInt32 value)
 	
 	callParamCallbacks(addr);
 	return (asynStatus) status;
+}
+
+
+void ADNPYReader::acquireThread()
+{
+	std::string filepath;
+		
+	this->getStringParam(params[ADNPY_FilePath], filepath);
+		
+	printf("%s\n", filepath.c_str());
 }
 
 

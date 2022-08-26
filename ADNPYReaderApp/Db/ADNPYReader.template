@@ -2,6 +2,15 @@ include "ADBase.template"
 
 record(waveform, "$(P)$(R)NPYFilePath")
 {
+	field(PINI, "YES")
+	field(DTYP, "asynOctetWrite")
+	field(INP, "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))ADNPY_FILE_PATH")
+	field(FTVL, "CHAR")
+	field(NELM, "256")
+}
+
+record(waveform, "$(P)$(R)NPYFilePath_RBV")
+{
 	field(DTYP, "asynOctetRead")
 	field(INP, "@asyn($(PORT),$(ADDR=0),$(TIMEOUT=1))ADNPY_FILE_PATH")
 	field(FTVL, "CHAR")

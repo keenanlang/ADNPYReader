@@ -14,6 +14,8 @@ class epicsShareClass ADNPYReader: public ADDriver
 	public:
 		ADNPYReader(const char* portname);
 		
+		void acquireThread();
+		
 		virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
 	
 	protected:

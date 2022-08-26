@@ -1,0 +1,7 @@
+# The search path for database files
+epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
+
+#LambdaConfig("Port Name", "Path to config", # of modules, # of threads to assign per module)
+NPYReader("$(PORT)")
+
+dbLoadRecords("$(ADNPY)/db/ADNPYReader.template","P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
